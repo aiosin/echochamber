@@ -1,4 +1,3 @@
-#include "echochamber.h"
 /* enable intel asm syntax*/
 .intel_syntax noprefix
 
@@ -16,7 +15,7 @@
         and rsp, -16
         call main
         mov rdi, rax /*system call param 1 = ret value of main (rax)*/
-        mov rax, SYS_exit
+        mov rax, 60 /*sys exit FIXME: include this in header definitions*/
         syscall /*^mov 60 into rax/eax and call int x80, which is system exit*/
         ret
 

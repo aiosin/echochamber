@@ -1,18 +1,17 @@
 #include "echochamber.h"
 
-internal uintptr strlen(char const* str)
-{
+internal uintptr strlen(char const* str){
     char const* p;
     for (p = str; *p; ++p);
         return p-str;
 }
 
 internal uintptr puts(char const* str){
+
     return write(stdout, str, strlen(str));
 }
 
-internal uintptr write(int fd, void const* data, uintptr nbytes)
-{
+internal uintptr write(int fd, void const* data, uintptr nbytes){
     return (intptr)
         syscall5(
             (void*) SYS_write, /* SYS_write */
@@ -24,10 +23,11 @@ internal uintptr write(int fd, void const* data, uintptr nbytes)
         );
 }
 
+
+
 int main(int argc, char* argv[])
 {
-    write(1, "hello\n", 6);
-    puts("aylmao\n");
+    puts("hello\n");
 
     return 0;
 }
