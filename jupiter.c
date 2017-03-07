@@ -1,21 +1,21 @@
-void* syscall5(
-    void* number,
-    void* arg1,
-    void* arg2,
-    void* arg3,
-    void* arg4,
-    void* arg5
-);
+#include "echochamber.h"
 
-typedef unsigned long int uintptr; /* size_t */
-typedef long int intptr; /* ssize_t */
+internal uintptr strlen(char const* str)
+{
+    char const* p;
+    for (p = str; *p; ++p);
+        return p-str;
+}
 
-static
-intptr write(int fd, void const* data, uintptr nbytes)
+internal uintptr puts(char const* str){
+    return write(stdout, str, strlen(str));
+}
+
+internal uintptr write(int fd, void const* data, uintptr nbytes)
 {
     return (intptr)
         syscall5(
-            (void*)1, /* SYS_write */
+            (void*) SYS_write, /* SYS_write */
             (void*)(intptr)fd,
             (void*)data,
             (void*)nbytes,
@@ -27,6 +27,7 @@ intptr write(int fd, void const* data, uintptr nbytes)
 int main(int argc, char* argv[])
 {
     write(1, "hello\n", 6);
+    puts("aylmao\n");
 
     return 0;
 }
