@@ -3,6 +3,7 @@
 #ifndef echochamber_h
 #define echochamber_h
 
+#define size_t unsigned int
 #define internal static
 #define stdout 1
 
