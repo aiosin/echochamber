@@ -17,6 +17,8 @@ internal uintptr strlen(char const* str);
 internal uintptr puts(char const* str);
 internal uintptr write(int fc, void const* data, uintptr bytes);
 
+void *memset(void *s, int c, size_t n);
+
 void* syscall5(
     void* number,
     void* arg1,
