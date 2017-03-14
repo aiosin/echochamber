@@ -1,6 +1,11 @@
 #define size_t long unsigned int
 #define internal static
 #define stdout 1
+#define O_ACCMODE	0003
+#define O_RDONLY	  00
+#define O_WRONLY	  01
+#define O_RDWR		  02
+#define O_CREAT		0100
 
 /*read(int fd, void *buf, size_t count);*/
 #define SYS_READ 0
@@ -176,7 +181,7 @@ internal uintptr stat(char* pathname, stat_info *buf ){
 /*invoke stat syscall but with filedescriptor*/
 internal uintptr fstat(int fd, stat_info *buf){
 	return (uintptr)syscall2(SYS_FSTAT,
-							(void*) fd,
+							(void*)(intptr) fd,
 							(void*) buf);
 }
 
@@ -210,6 +215,11 @@ void* memset(void *s, int c, uintptr n){
     while(n--)
         *p++ = (unsigned char)c;
     return s;
+}
+
+internal uintptr puts(char const* str){
+
+    return write(stdout, str, strlen(str));
 }
 
 /*
