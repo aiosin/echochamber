@@ -5,10 +5,10 @@ int main(int argc, char const *argv[]){
 	int filesize = getFilesizeFD(fd);
 	char * filecontent;
 	read(fd, &filecontent, filesize);
-
+	getFilesize("testfile");
 	puts(filecontent);
 	write(1,filecontent,filesize);
-
+	close(fd);
 
 	return 0;
 }
