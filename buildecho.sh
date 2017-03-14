@@ -16,4 +16,5 @@ gcc -std=c89 -pedantic -s -O2 -Wall -Werror \
     -o $exename \
 \
 && strip -R .comment $exename \
-&& strip -R .note.gnu.build-id $exename
+&& strip -R .note.gnu.build-id $exename \
+&& strip --strip-unneeded
