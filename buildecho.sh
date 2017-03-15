@@ -1,8 +1,8 @@
 #!/bin/sh
 
 exename="a.out"
-
-gcc -std=c89 -pedantic -s -O2 -Wall -Werror \
+#-Werror
+gcc -std=c89 -pedantic -s -O2 -Wall \
     -nostdlib \
     -fno-unwind-tables \
     -fno-asynchronous-unwind-tables \
@@ -12,9 +12,8 @@ gcc -std=c89 -pedantic -s -O2 -Wall -Werror \
     -Wa,--noexecstack \
     -fno-builtin \
     -fno-stack-protector \
-    util.S jupiter.c \
+    util.S echochamber.c \
     -o $exename \
 \
 && strip -R .comment $exename \
-&& strip -R .note.gnu.build-id $exename \
-&& strip --strip-unneeded
+&& strip -R .note.gnu.build-id $exename

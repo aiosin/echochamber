@@ -2,7 +2,8 @@
 
 exename="bloodshard"
 
-gcc -std=c89 -pedantic -s -O2 -Wall -Werror \
+#-Werror
+gcc -std=c89 -pedantic -s -O2 -Wall  \
     -nostdlib \
     -fno-unwind-tables \
     -fno-asynchronous-unwind-tables \

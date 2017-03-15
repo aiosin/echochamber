@@ -1,9 +1,0 @@
-execve("./bloodshard", ["./bloodshard"], [/* 88 vars */]) = 0
-open("testfile", O_RDWR)                = 3
-fstat(3, {st_mode=S_IFREG|0664, st_size=5, ...}) = 0
-read(3, "test\n", 5)                    = 5
-stat("testfile", {st_mode=S_IFREG|0664, st_size=5, ...}) = 0
---- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_MAPERR, si_addr=0xa74736574} ---
-+++ killed by SIGSEGV (core dumped) +++
-Segmentation fault (core dumped)
-

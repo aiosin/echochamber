@@ -38,15 +38,15 @@ typedef long int 			off_t;
 typedef long int 			blksize_t;
 typedef long int 			blkcnt_t;
 
-typedef struct{
+struct timespec{
 	time_t tv_sec;
 	time_t tv_nsec;
-} timespec;
+};
 
 
 /*stat struct definition as needed by stat/fstat syscall*/
 /* we also need presices defeinition of every type used here kill me pls*/
-typedef struct {
+struct stat{
 	dev_t     st_dev;         /* ID of device containing file */
 	ino_t     st_ino;         /* inode number */
 	nlink_t   st_nlink;       /* number of hard links */
@@ -62,14 +62,10 @@ typedef struct {
 	/* Since Linux 2.6, the kernel supports nanosecond
 	precision for the following timestamp fields.
 	For the details before Linux 2.6, see NOTES. */
-	timespec  st_atim;  /* time of last access */
-	timespec  st_mtim;  /* time of last modification */
-	timespec  st_ctim;  /* time of last status change */
-
-	#define st_atime st_atim.tv_sec      /* Backward compatibility */
-	#define st_mtime st_mtim.tv_sec
-	#define st_ctime st_ctim.tv_sec
-} stat_info;
+	struct timespec  st_atim;  /* time of last access */
+	struct timespec  st_mtim;  /* time of last modification */
+	struct timespec  st_ctim;  /* time of last status change */
+};
 
 
 
@@ -81,14 +77,13 @@ typedef struct {
 internal uintptr write(int fc, void const* data, uintptr bytes);
 internal uintptr read(int fd, void *buf, uintptr count);
 internal uintptr close(int fd);
-internal uintptr stat(char* pathname, stat_info *buf);
-internal uintptr fstat(int fd, stat_info *buf);
+internal uintptr stat(char* pathname, struct stat *buf);
+internal uintptr fstat(int fd, struct stat *buf);
 
 
 /*******PUBLIC  FUNCTIONS**********/
 internal uintptr strlen(char const* str);
 internal uintptr puts(char const* str);
-/*TODO: fixthis size_t mess, god knows where I else have used it like that*/
 void *memset(void *s, int c, size_t n);
 
 /********************************/
@@ -170,7 +165,8 @@ internal uintptr close(int fd){
 }
 
 /*invoke close syscall on an given file descriptor*/
-internal uintptr stat(char* pathname, stat_info *buf ){
+
+internal uintptr stat(char* pathname, struct stat* buf ){
 	
 	return (uintptr)syscall2(SYS_STAT,
 							(void*) pathname,
@@ -178,8 +174,9 @@ internal uintptr stat(char* pathname, stat_info *buf ){
 
 }
 
+
 /*invoke stat syscall but with filedescriptor*/
-internal uintptr fstat(int fd, stat_info *buf){
+internal uintptr fstat(int fd, struct stat* buf){
 	return (uintptr)syscall2(SYS_FSTAT,
 							(void*)(intptr) fd,
 							(void*) buf);
@@ -190,14 +187,16 @@ internal uintptr fstat(int fd, stat_info *buf){
 /***PUBLIC FUNCTIONS***/
 
 /*returns size of file at path in n bytes*/
+
 internal uintptr getFilesize(char* path){
-	stat_info tempstat;
+	struct stat tempstat;
 	stat(path, &tempstat);
 	return (uintptr) tempstat.st_size;
 }
 
+
 internal uintptr getFilesizeFD(int fd){
-	stat_info tempstat;
+	struct stat tempstat;
 	fstat(fd, &tempstat);
 	return (uintptr) tempstat.st_size;
 
@@ -222,11 +221,11 @@ internal uintptr puts(char const* str){
     return write(stdout, str, strlen(str));
 }
 
-/*
+
 void readFile(char* buffer, char* path){
 	
 }
 void readFileFD(char* buffer, int fd){
 
 }
-*/
+
