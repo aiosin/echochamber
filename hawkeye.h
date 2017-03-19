@@ -1,4 +1,3 @@
-#define size_t long unsigned int
 #define internal static
 #define stdout 1
 #define O_ACCMODE	0003
@@ -19,10 +18,23 @@
 #define SYS_STAT 4
 /*int fstat(int fd, struct stat *buf);*/
 #define SYS_FSTAT 5
+/*void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);*/
+#define SYS_MMAP 9
+/*int mprotect(void *addr, size_t len, int prot);*/
+#define SYS_MPROTECT 10
+/*int munmap(void *addr, size_t length);*/
+#define SYS_MUNMAP 11
 #define SYS_exit 60
+
+/*nop define for debugging purposes*/
+#define NOP __asm__("nop")
+/*In case I forget to replace size_t somewhere*/
+#define size_t long unsigned int
+
 /*FIXME: @future me, size_t is an uint long of at least 16 bits = ~65k or 130000k i forgot*/
 typedef unsigned long int 	uintptr; /* size_t */
 typedef long int 			intptr; /* ssize_t */
+
 
 /*why does the kernel need so much types ?*/
 typedef long int 			time_t;
@@ -79,12 +91,18 @@ internal uintptr read(int fd, void *buf, uintptr count);
 internal uintptr close(int fd);
 internal uintptr stat(char* pathname, struct stat *buf);
 internal uintptr fstat(int fd, struct stat *buf);
+internal uintptr mmap(void *addr, size_t length, int prot, int flags,int fd, off_t offset);
+internal uintptr munmap(void *addr, size_t length);
+internal uintptr mprotect(void *addr, size_t len, int prot);
+
 
 
 /*******PUBLIC  FUNCTIONS**********/
 internal uintptr strlen(char const* str);
 internal uintptr puts(char const* str);
 void *memset(void *s, int c, size_t n);
+void *malloc(uintptr size);
+void *free(void* ptr);
 
 /********************************/
 /********************************/
@@ -133,12 +151,10 @@ void* syscall1(
 
 internal uintptr write(int fd, void const* data, uintptr nbytes){
     return (intptr)syscall5((void*) SYS_WRITE, 
-            				(void*)(intptr)fd,
-            				(void*)data,
-            				(void*)nbytes,
-            				0, /* ignored */
-            				0  /* ignored */
-        );
+							(void*)(intptr)fd,
+							(void*)data,
+							(void*)nbytes,
+							0,0);
 }
 
 
@@ -182,6 +198,16 @@ internal uintptr fstat(int fd, struct stat* buf){
 							(void*) buf);
 }
 
+internal uintptr mmap(void *addr, size_t length, int prot, int flags,int fd, off_t offset){
+
+}
+
+internal uintptr munmap(void *addr, size_t length){
+
+}
+internal uintptr mprotect(void *addr, size_t len, int prot){
+
+}
 
 
 /***PUBLIC FUNCTIONS***/
@@ -223,9 +249,42 @@ internal uintptr puts(char const* str){
 
 
 void readFile(char* buffer, char* path){
-	
+	int fd = open(&path, O_RDWR);
+	int filesize = getFilesizeFD(fd);
+	read(fd, &buffer,filesize);
 }
 void readFileFD(char* buffer, int fd){
-
+	int filesize = getFilesizeFD(fd);
+	read(fd, );
 }
 
+/*Code only copy pasted, FIXME later*/
+/*general ideas and improvement potential, mmap always allocates at least one memory page*/
+/*one memory page (on my machine ) is 4kb, maybe we should allocate modulo 4kb since it wont make a difference (?)*/
+/*TBC*/
+/*Some observations:
+You assume that int and size_t have the same size. If you want to store a size_t value at the head of the allocation, then why don't you just do that? Why introduce int?
+This will very likely be quite inefficient, both in terms of memory usage and speed. There is significant overhead to mmap(), and typically allocations cannot be smaller than a "page". Most real allocators try to avoid calling OS-level functionality on every malloc(), in various ways.
+If mmap() fails, it will return MAP_FAILED, and so should malloc(). Thus, you need to test for that before de-referencing the pointer returned by mmap().
+Calling free(NULL) should be a valid thing to do; with your implementation it will very likely cause a crash since you don't NULL-check the argument before assuming it's valid.
+*/
+void* malloc(uintptr size){
+	   int *plen;
+    int len = size + sizeof( size ); // Add sizeof( size ) for holding length.
+
+    plen = mmap( 0, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
+
+    *plen = len;                     // First 4 bytes contain length.
+    return (void*)(&plen[1]);        // Memory that is af
+}
+
+/*this does not make sense to me, get to the bottom of this before I end up using this*/
+void free(void * ptr){
+	 int *plen = (int*)ptr;
+    int len;
+
+    plen--;                          /* Reach top of memory*/
+    len = *plen;                     /* Read length*/
+
+    munmap( (void*)plen, len );
+}
