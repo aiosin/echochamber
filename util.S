@@ -1,3 +1,4 @@
+#include <hawkeye.h>
 /* enable intel asm syntax*/
 .intel_syntax noprefix
 

@@ -110,37 +110,37 @@ void *free(void* ptr);
 /********************************/
 /********************************/
 void* syscall5(
-    void* number,
-    void* arg1,
-    void* arg2,
-    void* arg3,
-    void* arg4,
-    void* arg5
+	void* number,
+	void* arg1,
+	void* arg2,
+	void* arg3,
+	void* arg4,
+	void* arg5
 );
 
 void* syscall4(
-    void* number,
-    void* arg1,
-    void* arg2,
-    void* arg3,
-    void* arg4
+	void* number,
+	void* arg1,
+	void* arg2,
+	void* arg3,
+	void* arg4
 );
 
 void* syscall3(
-    uintptr number,
-    void* arg1,
-    void* arg2,
-    void* arg3
+	uintptr number,
+	void* arg1,
+	void* arg2,
+	void* arg3
 );
 
 void* syscall2(
-    uintptr number,
-    void* arg1,
-    void* arg2
+	uintptr number,
+	void* arg1,
+	void* arg2
 );
 void* syscall1(
-    uintptr number,
-    void* arg1
+	uintptr number,
+	void* arg1
 );
 
 /********************************/
@@ -150,7 +150,7 @@ void* syscall1(
 
 
 internal uintptr write(int fd, void const* data, uintptr nbytes){
-    return (intptr)syscall5((void*) SYS_WRITE, 
+	return (intptr)syscall5((void*) SYS_WRITE, 
 							(void*)(intptr)fd,
 							(void*)data,
 							(void*)nbytes,
@@ -199,14 +199,15 @@ internal uintptr fstat(int fd, struct stat* buf){
 }
 
 internal uintptr mmap(void *addr, size_t length, int prot, int flags,int fd, off_t offset){
+	return (uintptr) syscall5(SYS_MMAP ,addr, length, prot, flags, fd, offset);
 
 }
 
 internal uintptr munmap(void *addr, size_t length){
-
+	return (uintptr) syscall2(SYS_MUNMAP, addr, length);
 }
 internal uintptr mprotect(void *addr, size_t len, int prot){
-
+	return (uintptr) syscall3(SYS_MPROTECT, addr, len, prot);
 }
 
 
@@ -220,7 +221,7 @@ internal uintptr getFilesize(char* path){
 	return (uintptr) tempstat.st_size;
 }
 
-
+/*see getFilesize, but with FD*/
 internal uintptr getFilesizeFD(int fd){
 	struct stat tempstat;
 	fstat(fd, &tempstat);
@@ -228,31 +229,34 @@ internal uintptr getFilesizeFD(int fd){
 
 }
 
-
+/*returns length of string*/
 internal uintptr strlen(char const* str){
-    char const* p;
-    for (p = str; *p; ++p);
-        return p-str;
+	char const* p;
+	for (p = str; *p; ++p);
+		return p-str;
 }
 
+/*FIXME: UNTESTED*/
 void* memset(void *s, int c, uintptr n){
-    unsigned char* p=s;
-    while(n--)
-        *p++ = (unsigned char)c;
-    return s;
+	unsigned char* p=s;
+	while(n--)
+		*p++ = (unsigned char)c;
+	return s;
 }
-
+/*wrapper for write, uses strlen and write syscall */
 internal uintptr puts(char const* str){
 
-    return write(stdout, str, strlen(str));
+	return write(stdout, str, strlen(str));
 }
 
-
+/*read file contents at &path into addres of buffer*/
 void readFile(char* buffer, char* path){
 	int fd = open(&path, O_RDWR);
 	int filesize = getFilesizeFD(fd);
 	read(fd, &buffer,filesize);
 }
+
+/*read file contens from FD into a buffer*/
 void readFileFD(char* buffer, int fd){
 	int filesize = getFilesizeFD(fd);
 	read(fd, );
@@ -269,22 +273,22 @@ If mmap() fails, it will return MAP_FAILED, and so should malloc(). Thus, you ne
 Calling free(NULL) should be a valid thing to do; with your implementation it will very likely cause a crash since you don't NULL-check the argument before assuming it's valid.
 */
 void* malloc(uintptr size){
-	   int *plen;
-    int len = size + sizeof( size ); // Add sizeof( size ) for holding length.
+	int *plen;
+	int len = size + sizeof( size ); // Add sizeof( size ) for holding length.
 
-    plen = mmap( 0, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
+	plen = mmap( 0, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
 
-    *plen = len;                     // First 4 bytes contain length.
-    return (void*)(&plen[1]);        // Memory that is af
+	*plen = len;                     // First 4 bytes contain length.
+	return (void*)(&plen[1]);        // Memory that is af
 }
 
 /*this does not make sense to me, get to the bottom of this before I end up using this*/
 void free(void * ptr){
 	 int *plen = (int*)ptr;
-    int len;
+	int len;
 
-    plen--;                          /* Reach top of memory*/
-    len = *plen;                     /* Read length*/
+	plen--;                          /* Reach top of memory*/
+	len = *plen;                     /* Read length*/
 
-    munmap( (void*)plen, len );
+	munmap( (void*)plen, len );
 }
