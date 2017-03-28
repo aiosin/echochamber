@@ -112,7 +112,7 @@ void startServer(char *port)
 	struct addrinfo hints, *res, *p;
 
 	// getaddrinfo for host
-	memset (&hints, 0, sizeof(hints));
+	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
@@ -123,17 +123,21 @@ void startServer(char *port)
 	}
 	// socket and bind
 	for (p = res; p!=NULL; p=p->ai_next)
-	{
+	{	
+		/*implement socket syscall*/
 		listenfd = socket (p->ai_family, p->ai_socktype, 0);
+		/*check if socket succeded*/
 		if (listenfd == -1) continue;
 		if (bind(listenfd, p->ai_addr, p->ai_addrlen) == 0) break;
 	}
+	
 	if (p==NULL)
 	{
 		perror ("socket() or bind()");
 		exit(1);
 	}
 
+	/*freeaddrinfo and getaddrinfo NEED to be implemented somehow, FIXME later*/
 	freeaddrinfo(res);
 
 	// listen for incoming connections
@@ -155,12 +159,12 @@ void respond(int n)
 	rcvd=recv(clients[n], mesg, 99999, 0);
 
 	if (rcvd<0)    // receive error
-		fprintf(stderr,("recv() error\n"));
+		puts("recv() error\n");
 	else if (rcvd==0)    // receive socket closed
-		fprintf(stderr,"Client disconnected upexpectedly.\n");
+		puts("Client disconnected upexpectedly.\n");
 	else    // message received
 	{
-		printf("%s", mesg);
+		puts(&mesg);
 		reqline[0] = strtok (mesg, " \t\n");
 		if ( strncmp(reqline[0], "GET\0", 4)==0 )
 		{
@@ -190,7 +194,7 @@ void respond(int n)
 		}
 	}
 
-	//Closing SOCKET
+	/*TODO implement shutdown syscall*/
 	shutdown (clients[n], SHUT_RDWR);         //All further send and recieve operations are DISABLED...
 	close(clients[n]);
 	clients[n]=-1;
