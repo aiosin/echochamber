@@ -199,4 +199,3 @@ void respond(int n)
 	close(clients[n]);
 	clients[n]=-1;
 }
-0Looking
