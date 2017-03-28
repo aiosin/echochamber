@@ -236,13 +236,7 @@ internal uintptr strlen(char const* str){
 		return p-str;
 }
 
-/*FIXME: UNTESTED*/
-void* memset(void *s, int c, uintptr n){
-	unsigned char* p=s;
-	while(n--)
-		*p++ = (unsigned char)c;
-	return s;
-}
+
 /*wrapper for write, uses strlen and write syscall */
 internal uintptr puts(char const* str){
 
@@ -291,4 +285,11 @@ void free(void * ptr){
 	len = *plen;                     /* Read length*/
 
 	munmap( (void*)plen, len );
+}
+
+void* memset(void *s, int c, uintptr n){
+	unsigned char* p=s;
+	while(n--)
+		*p++ = (unsigned char)c;
+	return s;
 }
